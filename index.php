@@ -3,6 +3,7 @@
     // Initialize the session
     session_start();
     $page_title = 'Login Page';
+    include ('includes/headerrr.html');
     require_once 'config/connection.php';
     
 
