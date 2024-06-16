@@ -1,6 +1,5 @@
 <?php
-    define('DB_SERVER', 'calorietracker.mysql.database.azure.com');
-    define('DB_USER', 'calorietracker@calorietracker');
-    define('DB_PASS', '!ctracker1234'); // Replace 'your_password' with the actual password you set for the MySQL admin user.
-    define('DB_NAME', 'ctrackerdb');
+$connection = mysqli_init();
+mysqli_ssl_set($connection,NULL,NULL, "DigiCertGlobalRootCA.crt.pem", NULL, NULL);
+mysqli_real_connect($connection, "calorietracker.mysql.database.azure.com", "calorietracker", "!ctracker1234", "ctrackerdb", 3306, MYSQLI_CLIENT_SSL);
 ?>
