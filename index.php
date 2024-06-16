@@ -1,8 +1,9 @@
 <?php
     session_start();
+    require_once 'config/connection.php';
     $page_title = 'Login Page';
     include ('includes/header_index.html');
-    require_once 'config/connection.php';
+    
     
 
     // Check if the user is already logged in, if yes then redirect him to welcome page
