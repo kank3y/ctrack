@@ -1,6 +1,7 @@
 <?php
   session_start();
-
+include ('includes/header_index.html');
+    require_once 'config/connection.php';
 
     // Check if the user is logged in, if not then redirect him to login page
     if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
@@ -210,45 +211,74 @@
 </div>
 </div>
 
-   <?php
-    $connection = mysqli_connect("localhost", "root", "");
-    $db = mysqli_select_db($connection, 'ctrackerdb');
+<?php
+  $db_server = "calorietracker.mysql.database.azure.com";
+  $db_username = "calorietracker";
+  $db_password = "!ctracker1234";
+  $db_name = "ctrackerdb";
 
-    // Get the username from the session
-    $username = $_SESSION["username"];
+// Establish connection to Azure MySQL
+  $connection = mysqli_init();
+  mysqli_ssl_set($connection,NULL,NULL, "DigiCertGlobalRootCA.crt.pem", NULL, NULL);
+  mysqli_real_connect($connection, $db_server, $db_username, $db_password, $db_name, 3306, NULL);
 
-    $query = "SELECT SUM(cal_count * quantity) as totalcal FROM calc_table WHERE username = '$username'";
-    $total = mysqli_query($connection, $query);
+  // Check connection
+  if (mysqli_connect_errno()) {
+      die('Database connection failed ' . mysqli_connect_error());
+  }
 
-    if ($total) {
-        $row = mysqli_fetch_assoc($total);
-        $totalcal = $row['totalcal'];
-    }
+  // Select the database
+  $db_selected = mysqli_select_db($connection, $db_name);
+
+  // Check if database selection succeeded
+  if (!$db_selected) {
+      die ('Can\'t use the selected database : ' . mysqli_error($connection));
+  }
+
+  // Get the username from the session
+
+  $username = $_SESSION["username"];
+
+  $query = "SELECT SUM(cal_count * quantity) as totalcal FROM calc_table WHERE username = '$username'";
+  $total = mysqli_query($connection, $query);
+
+  if ($total) {
+      $row = mysqli_fetch_assoc($total);
+      $totalcal = $row['totalcal'];
+}
 ?>
+
 
 
   
 
 
 <?php
-  // Check if the form is submitted
-  if(isset($_POST['searchBtn'])) {
+// Check if the form is submitted
+if(isset($_POST['searchBtn'])) {
 
     // Check if the search input field is empty
     if(empty($_POST['search'])) {
-      echo "Field cannot be empty.";
-      echo "<br>";
-
-      echo "<button onclick='history.back()' class='btn btn-secondary'>Return</button>";
-      exit;
+        echo "Field cannot be empty.";
+        echo "<br>";
+        echo "<button onclick='history.back()' class='btn btn-secondary'>Return</button>";
+        exit;
     }
 
-    // Create a connection to the database
-    $connection = mysqli_connect('localhost', 'root', '', 'ctrackerdb');
+    // Database connection details for Azure MySQL
+    $db_server = "calorietracker.mysql.database.azure.com";
+    $db_username = "calorietracker@calorietracker";
+    $db_password = "!ctracker1234";
+    $db_name = "ctrackerdb";
 
-    // Check if connection is successful
-    if(mysqli_connect_errno()) {
-      die('Database connection failed ' . mysqli_connect_error());
+    // Establish connection to Azure MySQL
+    $connection = mysqli_init();
+    mysqli_ssl_set($connection, NULL, NULL, "DigiCertGlobalRootCA.crt.pem", NULL, NULL);
+    mysqli_real_connect($connection, $db_server, $db_username, $db_password, $db_name, 3306, NULL);
+
+    // Check connection
+    if (mysqli_connect_errno()) {
+        die('Database connection failed ' . mysqli_connect_error());
     }
 
     // Sanitize the search input to prevent SQL injection
@@ -260,43 +290,44 @@
 
     // Check if query is successful
     if(!$result) {
-      die('Query failed ' . mysqli_error($connection));
+        die('Query failed ' . mysqli_error($connection));
     }
 
     // Check if there are any results
     if(mysqli_num_rows($result) == 0) {
-      echo "<p>Data does not exist</p>";
-      echo "<button onclick='history.back()' class='btn btn-secondary'>Return</button>";
-      echo "<br>";
+        echo "<p>Data does not exist</p>";
+        echo "<button onclick='history.back()' class='btn btn-secondary'>Return</button>";
+        echo "<br>";
     }
     else {
-      echo "<br>";  
-      echo "<table class='table table-striped table-bordered table-hover'>";
-      echo "<tr><th>Food Name</th><th>Quantity</th><th>Calories</th><th>Day</th><th>--</th><th>--</th></tr>";
-      // Loop through the results and display them
-      while($row = mysqli_fetch_array($result)) {
-        echo "<tr>";
-        echo "<td>" . $row['food_name'] . "</td>";
-        echo "<td>" . $row['quantity'] . "</td>";
-        echo "<td>" . $row['cal_count'] . "</td>";
-        echo "<td>" . date('l', strtotime($row['date_added'])) . "</td>";
-        echo "<td><a href='updatefood.php?id=" . $row['id'] . "' class='btn btn-primary'>Update</a></td>";
-        echo "<td><a href='delete.php?id=" . $row['id'] . "' onclick='return confirm(\"Are you sure you want to delete this data?\")' class='btn btn-danger'>Delete</a></td>";
-        echo "</tr>";
-      }
-      echo "</table>";
+        echo "<br>";  
+        echo "<table class='table table-striped table-bordered table-hover'>";
+        echo "<tr><th>Food Name</th><th>Quantity</th><th>Calories</th><th>Day</th><th>--</th><th>--</th></tr>";
+        // Loop through the results and display them
+        while($row = mysqli_fetch_array($result)) {
+            echo "<tr>";
+            echo "<td>" . htmlspecialchars($row['food_name']) . "</td>";
+            echo "<td>" . htmlspecialchars($row['quantity']) . "</td>";
+            echo "<td>" . htmlspecialchars($row['cal_count']) . "</td>";
+            echo "<td>" . htmlspecialchars(date('l', strtotime($row['date_added']))) . "</td>";
+            echo "<td><a href='updatefood.php?id=" . $row['id'] . "' class='btn btn-primary'>Update</a></td>";
+            echo "<td><a href='delete.php?id=" . $row['id'] . "' onclick='return confirm(\"Are you sure you want to delete this data?\")' class='btn btn-danger'>Delete</a></td>";
+            echo "</tr>";
+        }
+        echo "</table>";
 
-      // Add a button to go back to the calculator.php page
-      echo "<form action='calculator.php' method='GET'>";
-      echo "<input type='hidden' name='search' value='$search'>"; 
-      echo "<button type='submit' name='backBtn' class='btn btn-secondary'>Back</button>";
-      echo "</form>";
+        // Add a button to go back to the calculator.php page
+        echo "<form action='calculator.php' method='GET'>";
+        echo "<input type='hidden' name='search' value='" . htmlspecialchars($search) . "'>"; 
+        echo "<button type='submit' name='backBtn' class='btn btn-secondary'>Back</button>";
+        echo "</form>";
     }
 
     // Close the connection
     mysqli_close($connection);
-  }
+}
 ?>
+
 
 <br>
 <div class="container">
@@ -316,68 +347,112 @@
       <tbody>
 
 <?php
-    // Create a connection to the database
-    $connection = mysqli_connect('localhost', 'root', '', 'ctrackerdb');
 
-    // Check if connection is successful
-    if(mysqli_connect_errno()) {
-        die('Database connection failed ' . mysqli_connect_error());
+
+// Check if the user is logged in
+if (!isset($_SESSION["username"])) {
+    // Redirect to login page or handle unauthorized access
+    header("Location: login.php");
+    exit;
+}
+
+  $db_server = "calorietracker.mysql.database.azure.com";
+  $db_username = "calorietracker";
+  $db_password = "!ctracker1234";
+  $db_name = "ctrackerdb";
+
+// Create a connection to the database
+$connection = mysqli_init();
+mysqli_ssl_set($connection, NULL, NULL, "DigiCertGlobalRootCA.crt.pem", NULL, NULL);
+mysqli_real_connect($connection, $db_server, $db_username, $db_password, $db_name, 3306);
+
+// Check if connection is successful
+if (mysqli_connect_errno()) {
+    die('Database connection failed: ' . mysqli_connect_error());
+}
+
+// Get the username from the session (assuming it's previously set securely)
+$username = $_SESSION["username"];
+
+// Define how many records to display per page
+$records_per_page = 5;
+
+// Get the current page number from the URL query string
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+
+// Calculate the offset for the current page
+$offset = ($page - 1) * $records_per_page;
+
+// Prepare the query to select records with limit and offset, filtered by username
+$query = "SELECT *, DATE_FORMAT(date_added, '%W') AS day FROM calc_table WHERE username = ? LIMIT ?, ?";
+$stmt = mysqli_prepare($connection, $query);
+
+// Bind parameters to the prepared statement
+mysqli_stmt_bind_param($stmt, "sii", $username, $offset, $records_per_page);
+
+// Execute the prepared statement
+mysqli_stmt_execute($stmt);
+
+// Get result set from the prepared statement
+$result = mysqli_stmt_get_result($stmt);
+
+// Check if query execution was successful
+if(!$result) {
+    die('Query failed ' . mysqli_error($connection));
+}
+
+// Get the total number of records for the logged-in user
+$total_records_query = "SELECT COUNT(*) FROM calc_table WHERE username = ?";
+$total_records_stmt = mysqli_prepare($connection, $total_records_query);
+
+// Bind parameter for the total records prepared statement
+mysqli_stmt_bind_param($total_records_stmt, "s", $username);
+
+// Execute the total records prepared statement
+mysqli_stmt_execute($total_records_stmt);
+
+// Get result set from the total records prepared statement
+$total_records_result = mysqli_stmt_get_result($total_records_stmt);
+
+// Fetch total number of records as integer from the result set
+$total_records = mysqli_fetch_array($total_records_result)[0];
+
+// Calculate the total number of pages needed for pagination
+$total_pages = ceil($total_records / $records_per_page);
+
+// Initialize total calories counter
+$total_calories = 0;
+
+// Check if there are any records returned
+if(mysqli_num_rows($result) == 0) {
+    echo "<tr><td colspan='6'>No records found.</td></tr>";
+} else {
+    // Loop through the result set and display records in a table
+    while($row = mysqli_fetch_array($result)) {
+        echo "<tr>";
+        echo "<td>" . htmlspecialchars($row['food_name']) . "</td>";
+        echo "<td>" . htmlspecialchars($row['quantity']) . "</td>";
+        echo "<td>" . htmlspecialchars($row['cal_count']) . "</td>";
+        echo "<td>" . htmlspecialchars($row['day']) . "</td>";
+        echo "<td><a href='updatefood.php?id=" . $row['id'] . "' class='btn btn-primary'>Update</a></td>";
+        echo "<td><a href='delete.php?id=" . $row['id'] . "' onclick='return confirm(\"Are you sure you want to delete this data?\")' class='btn btn-danger'>Delete</a></td>";
+        echo "</tr>";
+
+        // Accumulate calorie count to calculate total calories
+        $total_calories += $row['cal_count'];
     }
+}
 
-    // Get the username from the session
-    $username = $_SESSION["username"];
+// Close prepared statements
+mysqli_stmt_close($stmt);
+mysqli_stmt_close($total_records_stmt);
 
-    // Define how many records to display per page
-    $records_per_page = 5;
-
-    // Get the current page number
-    $page = isset($_GET['page']) ? $_GET['page'] : 1;
-
-    // Calculate the offset for the current page
-    $offset = ($page - 1) * $records_per_page;
-
-    // Execute the query to select records with limit and offset, filtered by username
-    $query = "SELECT *, DATE_FORMAT(date_added, '%W') AS day FROM calc_table WHERE username = '$username' LIMIT $offset, $records_per_page";
-    $result = mysqli_query($connection, $query);
-
-    // Check if query is successful
-    if(!$result) {
-        die('Query failed ' . mysqli_error($connection));
-    }
-
-    // Get the total number of records for the logged-in user
-    $total_records_query = "SELECT COUNT(*) FROM calc_table WHERE username = '$username'";
-    $total_records_result = mysqli_query($connection, $total_records_query);
-    $total_records = mysqli_fetch_array($total_records_result)[0];
-
-    // Calculate the total number of pages
-    $total_pages = ceil($total_records / $records_per_page);
-
-    // Initialize total calories to 0
-    $total_calories = 0;
-
-    // Check if there are any results
-    if(mysqli_num_rows($result) == 0) {
-        echo "<tr><td colspan='6'>No records found.</td></tr>";
-    } else {
-        // Loop through the results and display them
-        while($row = mysqli_fetch_array($result)) {
-            echo "<tr>";
-            echo "<td>" . $row['food_name'] . "</td>";
-            echo "<td>" . $row['quantity'] . "</td>";
-            echo "<td>" . $row['cal_count'] . "</td>";
-            echo "<td>" . $row['day'] . "</td>";
-            echo "<td><a href='updatefood.php?id=" . $row['id'] . "' class='btn btn-primary'>Update</a></td>";
-            echo "<td><a href='delete.php?id=" . $row['id'] . "' onclick='return confirm(\"Are you sure you want to delete this data?\")' class='btn btn-danger'>Delete</a></td>";
-            echo "</tr>";
-
-            // Add the current row's calorie count to total calories
-            $total_calories += $row['cal_count'];
-        }
-    }
-    // Close the connection
-    mysqli_close($connection);
+// Close database connection
+mysqli_close($connection);
 ?>
+
+
+
 
 
 <nav aria-label="Page navigation" class="pagination-nav">
