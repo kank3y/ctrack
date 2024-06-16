@@ -1,6 +1,4 @@
 <?php
-
-    // Initialize the session
     session_start();
     $page_title = 'Login Page';
     include ('includes/header_index.html');
