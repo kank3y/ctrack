@@ -1,5 +1,7 @@
 <?php
     session_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
     $page_title = 'Login Page';
     include ('includes/header_index.html');
     require_once 'config/connection.php';
