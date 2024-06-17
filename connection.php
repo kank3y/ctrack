@@ -1,3 +1,4 @@
+<?php
 // Create a MySQLi object instance
 $connection = mysqli_init();
 
@@ -6,14 +7,29 @@ if (!$connection) {
     die('mysqli_init failed');
 }
 
-if (!mysqli_ssl_set($connection, NULL, NULL, __DIR__ . '/DigiCertGlobalRootCA.crt.pem', NULL, NULL)) {
+// Replace 'DigiCertGlobalRootCA.crt.pem' with the correct path to your certificate file
+$cert_file = __DIR__ . '/DigiCertGlobalRootCA.crt.pem';
+
+if (!mysqli_ssl_set($connection, NULL, NULL, $cert_file, NULL, NULL)) {
     die('Setting SSL failed');
 }
 
 // Connect to the database
-if (!mysqli_real_connect($connection, "calorietracker.mysql.database.azure.com", "calorietracker", "!ctracker1234", "ctrackerdb", 3306, MYSQLI_CLIENT_SSL)) {
+$servername = "calorietracker.mysql.database.azure.com";
+$username = "calorietracker";
+$password = "!ctracker1234";
+$dbname = "ctrackerdb";
+$port = 3306;
+
+if (!mysqli_real_connect($connection, $servername, $username, $password, $dbname, $port, MYSQLI_CLIENT_SSL)) {
     die('Connect Error (' . mysqli_connect_errno() . ') ' . mysqli_connect_error());
 }
 
 // Connection successful
 echo 'Connected successfully';
+
+// Perform your database operations here using $connection
+
+// Close the connection
+mysqli_close($connection);
+?>
