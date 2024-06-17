@@ -1,6 +1,5 @@
 <?php
 session_start();
-include('header.html'); // Include your header file if needed
 require 'connection.php'; // Assuming this file includes your database connection
 
 $page_title = 'Sign Up'; // Page title
