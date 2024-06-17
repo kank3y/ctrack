@@ -1,9 +1,9 @@
 <?php
 session_start();
-include('header.html');
+include('header.html'); // Include your header file if needed
 require 'connection.php'; // Assuming this file includes your database connection
 
-$page_title = 'Calculator Page';
+$page_title = 'Sign Up'; // Page title
 
 // Define variables and initialize with empty values
 $username = $password = $confirm_password = "";
