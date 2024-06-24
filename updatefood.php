@@ -42,10 +42,11 @@ if (isset($_POST['updateBtn'])) {
     if (!$result) {
         die('Query failed ' . mysqli_error($connection));
     }
-
+    
+echo "<div class='alert alert-success text-center'>Record updated successfully! Go back to calculator page.</div>";
     // Close the connection
     mysqli_close($connection);
-
+    
     // Redirect the user back to the page that displays all the records
     header("Location: calculator.php");
     exit;
