@@ -26,7 +26,6 @@ if (!$result) {
 // Fetch the record to update
 $row = mysqli_fetch_array($result);
 
-// Check if the form is submitted
 if (isset($_POST['updateBtn'])) {
 
     // Sanitize the input to prevent SQL injection
@@ -45,6 +44,9 @@ if (isset($_POST['updateBtn'])) {
 
     // Close the connection
     mysqli_close($connection);
+
+    // Debugging message to ensure this point is reached
+    echo "Record updated successfully. Redirecting...";
 
     // Redirect the user back to the page that displays all the records
     header("Location: calculator.php");
