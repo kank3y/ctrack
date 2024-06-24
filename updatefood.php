@@ -48,18 +48,19 @@ if (isset($_POST['updateBtn'])) {
 
     // Redirect the user back to the page that displays all the records
     header("Location: calculator.php");
-    exit();
+    exit;
 }
 ?>
 
 <!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="author" content="Group 4">
     <meta name="keywords" content="HTML, CSS, JavaScript">
+    <title><?php echo $page_title; ?></title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>    
 
     <link rel="stylesheet" href="css/designss.css">
@@ -67,7 +68,8 @@ if (isset($_POST['updateBtn'])) {
     <style>
         body {
             background-image: url('images/foodbg.png');
-            background-repeat: no-repeat;background-attachment: fixed;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
             background-size: cover;
         }
     </style>
@@ -98,7 +100,7 @@ if (isset($_POST['updateBtn'])) {
                     <input type="text" class="form-control text-start" id="cal_count" name="cal_count" value="<?php echo htmlspecialchars($row['cal_count']); ?>">
                 </div>
             </div>
-            <div class="text-center"> <!-- added class here -->
+            <div class="text-center">
                 <input type="submit" name="updateBtn" value="Update" class="btn btn-primary btn-xl">
                 <a href="calculator.php" class="btn btn-danger btn-xl">Return</a>
             </div>
