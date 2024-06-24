@@ -2,10 +2,6 @@
 session_start();
 require 'connection.php';
 
-// Enable error reporting for debugging purposes
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
 $page_title = 'Update Page';
 include ('header.html');
 
@@ -50,34 +46,28 @@ if (isset($_POST['updateBtn'])) {
     // Close the connection
     mysqli_close($connection);
 
-    // Debugging message to ensure this point is reached
-    echo "Record updated successfully. Redirecting...";
-
     // Redirect the user back to the page that displays all the records
     header("Location: calculator.php");
     exit();
 }
-
-// Close the connection if not already closed
-if ($connection) {
-    mysqli_close($connection);
-}
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="author" content="Group 4">
     <meta name="keywords" content="HTML, CSS, JavaScript">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>    
+
     <link rel="stylesheet" href="css/designss.css">
+
     <style>
         body {
             background-image: url('images/foodbg.png');
-            background-repeat: no-repeat;
-            background-attachment: fixed;
+            background-repeat: no-repeat;background-attachment: fixed;
             background-size: cover;
         }
     </style>
@@ -116,5 +106,6 @@ if ($connection) {
     </div>
 
     <?php include ('footer.html'); ?>
+
 </body>
 </html>
