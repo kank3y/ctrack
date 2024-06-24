@@ -37,7 +37,7 @@ if (isset($_POST['updateBtn'])) {
     // Execute the query to update the record
     $query = "UPDATE calc_table SET food_name = '$food_name', quantity = '$quantity', cal_count = '$cal_count' WHERE id = '$id'";
     $result = mysqli_query($connection, $query);
-
+header("Location: calculator.php");
     // Check if query is successful
     if (!$result) {
         die('Query failed ' . mysqli_error($connection));
@@ -48,7 +48,7 @@ echo "<div class='alert alert-success text-center'>Record updated successfully! 
     mysqli_close($connection);
     
     // Redirect the user back to the page that displays all the records
-    header("Location: calculator.php");
+    
     exit;
 }
 ?>
