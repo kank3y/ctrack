@@ -222,16 +222,42 @@
 </div>
 
     <?php
-        require 'connection.php';
+require 'connection.php';
 
-        $query = "SELECT SUM(cal_count * quantity) as totalcal FROM calc_table";
-        $total = mysqli_query($connection, $query);
 
-        if ($total) {
-          $row = mysqli_fetch_assoc($total);
-          $totalcal = $row['totalcal'];
-        }
-        ?>
+
+// Get the logged-in username from the session
+$username = $_SESSION["username"];
+
+// Query to calculate total calories for the logged-in user
+$query = "SELECT SUM(cal_count * quantity) AS totalcal FROM calc_table WHERE username = ?";
+$stmt = mysqli_prepare($connection, $query);
+
+// Bind parameters
+mysqli_stmt_bind_param($stmt, 's', $username);
+
+// Execute the statement
+mysqli_stmt_execute($stmt);
+
+// Get result set
+$result = mysqli_stmt_get_result($stmt);
+
+// Check if query is successful
+if ($result) {
+    $row = mysqli_fetch_assoc($result);
+    $totalcal = $row['totalcal'];
+} else {
+    // Handle error if query fails
+    $totalcal = 0; // Default to 0 if there are no results or query fails
+}
+
+// Close the statement
+mysqli_stmt_close($stmt);
+
+// Close the connection
+mysqli_close($connection);
+?>
+
 
   
 
@@ -318,62 +344,83 @@
       <tbody>
 
 <?php
-  // Include the database connection file
-  require 'connection.php';
 
-  // Define how many records to display per page
-  $records_per_page = 5;
+require 'connection.php';
 
-  // Get the current page number
-  $page = isset($_GET['page']) ? $_GET['page'] : 1;
 
-  // Calculate the offset for the current page
-  $offset = ($page - 1) * $records_per_page;
 
-  // Execute the query to select records with limit and offset
-  $query = "SELECT *, DATE_FORMAT(date_added, '%W') AS day FROM calc_table LIMIT $offset, $records_per_page";
-  $result = mysqli_query($connection, $query);
+// Define how many records to display per page
+$records_per_page = 5;
 
-  // Check if query is successful
-  if(!$result) {
+// Get the current page number
+$page = isset($_GET['page']) ? $_GET['page'] : 1;
+
+// Calculate the offset for the current page
+$offset = ($page - 1) * $records_per_page;
+
+// Get the logged-in username from the session
+$username = $_SESSION["username"];
+
+// Execute the query to select records with limit, offset, and user filter
+$query = "SELECT *, DATE_FORMAT(date_added, '%W') AS day FROM calc_table WHERE username = ? LIMIT ?, ?";
+$stmt = mysqli_prepare($connection, $query);
+
+// Bind parameters
+mysqli_stmt_bind_param($stmt, 'sii', $username, $offset, $records_per_page);
+
+// Execute the statement
+mysqli_stmt_execute($stmt);
+
+// Get result set
+$result = mysqli_stmt_get_result($stmt);
+
+// Check if query is successful
+if (!$result) {
     die('Query failed ' . mysqli_error($connection));
-  }
+}
 
-  // Get the total number of records
-  $total_records_query = "SELECT COUNT(*) FROM calc_table";
-  $total_records_result = mysqli_query($connection, $total_records_query);
-  $total_records = mysqli_fetch_array($total_records_result)[0];
+// Get the total number of records for the logged-in user
+$total_records_query = "SELECT COUNT(*) FROM calc_table WHERE username = ?";
+$stmt_total = mysqli_prepare($connection, $total_records_query);
+mysqli_stmt_bind_param($stmt_total, 's', $username);
+mysqli_stmt_execute($stmt_total);
+$total_records_result = mysqli_stmt_get_result($stmt_total);
+$total_records = mysqli_fetch_array($total_records_result)[0];
 
-  // Calculate the total number of pages
-  $total_pages = ceil($total_records / $records_per_page);
+// Calculate the total number of pages
+$total_pages = ceil($total_records / $records_per_page);
 
-  // Initialize total calories to 0
-  $total_calories = 0;
+// Initialize total calories to 0
+$total_calories = 0;
 
-  // Check if there are any results
-  if(mysqli_num_rows($result) == 0) {
+// Check if there are any results
+if (mysqli_num_rows($result) == 0) {
     echo "<tr><td colspan='6'>No records found.</td></tr>";
-  }
-  else {
+} else {
     // Loop through the results and display them
-    while($row = mysqli_fetch_array($result)) {
-      echo "<tr>";
-      echo "<td>" . $row['food_name'] . "</td>";
-      echo "<td>" . $row['quantity'] . "</td>";
-      echo "<td>" . $row['cal_count'] . "</td>";
-      echo "<td>" . $row['day'] . "</td>";
-      echo "<td><a href='updatefood.php?id=" . $row['id'] . "' class='btn btn-primary'>Update</a></td>";
-      echo "<td><a href='delete.php?id=" . $row['id'] . "' onclick='return confirm(\"Are you sure you want to delete this data?\")' class='btn btn-danger'>Delete</a></td>";
-      echo "</tr>";
+    while ($row = mysqli_fetch_array($result)) {
+        echo "<tr>";
+        echo "<td>" . htmlspecialchars($row['food_name']) . "</td>";
+        echo "<td>" . htmlspecialchars($row['quantity']) . "</td>";
+        echo "<td>" . htmlspecialchars($row['cal_count']) . "</td>";
+        echo "<td>" . htmlspecialchars($row['day']) . "</td>";
+        echo "<td><a href='updatefood.php?id=" . $row['id'] . "' class='btn btn-primary'>Update</a></td>";
+        echo "<td><a href='delete.php?id=" . $row['id'] . "' onclick='return confirm(\"Are you sure you want to delete this data?\")' class='btn btn-danger'>Delete</a></td>";
+        echo "</tr>";
 
-      // Add the current row's calorie count to total calories
-      $total_calories += $row['cal_count'];
+        // Add the current row's calorie count to total calories
+        $total_calories += $row['cal_count'];
     }
-  }
+}
 
-  // Close the connection
-  mysqli_close($connection);
+// Close the statement
+mysqli_stmt_close($stmt);
+mysqli_stmt_close($stmt_total);
+
+// Close the connection
+mysqli_close($connection);
 ?>
+
 
 
 <nav aria-label="Page navigation" class="pagination-nav">
