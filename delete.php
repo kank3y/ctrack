@@ -16,6 +16,7 @@ if(!$result) {
   die('Query failed ' . mysqli_error($connection));
 }
 
+echo "<div class='alert alert-success text-center'>Record deleted successfully! Go back to calculator page.</div>";
 // Redirect the user back to the page that displays all the records
 header("Location: calculator.php");
 exit();
